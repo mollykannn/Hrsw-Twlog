@@ -24,7 +24,7 @@ jobs:
 
       - name: Install dependencies
         run: | 
-          node install
+          npm install
           node index.js --from ${{ env.YESTERDAY_DATE }} --to ${{ env.CURRENT_DATE }} --user hirasawa
 
       - name: Deploy
