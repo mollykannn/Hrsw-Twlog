@@ -24,7 +24,7 @@ jobs:
 
       - name: Install dependencies
         run: | 
-          npm install
+          node install
           node index.js --from ${{ env.YESTERDAY_DATE }} --to ${{ env.CURRENT_DATE }} --user hirasawa
 
       - name: Deploy
@@ -32,3 +32,4 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           BRANCH: main
+          FOLDER: src
