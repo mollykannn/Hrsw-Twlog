@@ -26,7 +26,7 @@ jobs:
         run: | 
           npm install
           node index.js --from ${{ env.YESTERDAY_DATE }} --to ${{ env.CURRENT_DATE }} --user hirasawa
-          git config --local user.name "action bot"
+          git config --local user.name "Action Bot"
           git add .
           git commit -m "POST: ${{ env.YESTERDAY_DATE }}"
 
