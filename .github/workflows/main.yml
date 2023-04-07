@@ -26,10 +26,11 @@ jobs:
         run: | 
           npm install
           node index.js --from ${{ env.YESTERDAY_DATE }} --to ${{ env.CURRENT_DATE }} --user hirasawa
+          git config --local user.name "action bot"
+          git add .
+          git commit -m "POST: ${{ env.YESTERDAY_DATE }}"
 
       - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: ad-m/github-push-action@master
         with:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          BRANCH: main
-          FOLDER: src
