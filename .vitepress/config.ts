@@ -7,6 +7,7 @@ const config = async () => {
     title: "馬骨記錄",
     description: "馬骨記錄用筆記本",
     base: "/TW-crawler",
+    srcExclude: ['README.md'],
     head: [
       [
         'link',
