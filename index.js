@@ -8,6 +8,8 @@ const timezone = require('dayjs/plugin/timezone');
 dayjs.extend(utc);
 dayjs.extend(timezone);
 const dir = "./src";
+const dirImage = "./src/images";
+
 const cmd = stdio.getopt({
   'from': {key: 'from', description: 'from', args: 1},
   'to': {key: 'to', description: 'to', args: 1},
@@ -18,16 +20,16 @@ const file = `./src/${cmd.from}.md`;
 if (!fs.existsSync(dir)) {
   fs.mkdirSync(dir);
 }
-if (!fs.existsSync('./src/images')) {
-  fs.mkdirSync('./src/images');
+if (!fs.existsSync(dirImage)) {
+  fs.mkdirSync(dirImage);
 }
-
 fs.writeFile(file, "", (err) => {
   if (err) throw err;
 });
 
 const formatDate = (date) => {
-  return dayjs(date.replace(' · ',' ')).tz('Asia/Tokyo').format('D MMM, YYYY hh:mm A');
+  let dateTimezone = dayjs(date.replace(' · ',' ')).tz('Asia/Tokyo');
+  return [dateTimezone.format('D MMM, YYYY hh:mm A'), dateTimezone.format('YYYY-MM-DD')];
 }
 
 function downloadImage(url, filepath) {
@@ -38,10 +40,8 @@ function downloadImage(url, filepath) {
                   .on('error', reject)
                   .once('close', () => resolve(filepath));
           } else {
-              // Consume response data to free up memory
               res.resume();
               reject(new Error(`Request Failed With a Status Code: ${res.statusCode}`));
-
           }
       });
   });
@@ -50,7 +50,8 @@ function downloadImage(url, filepath) {
 (async () => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  await page.goto(`https://nitter.it/${cmd.user}/search?f=tweets&q=&since=${cmd.from}&until=${cmd.to}`);
+  const subtractDay = dayjs(cmd.from).subtract(1, 'day').format('YYYY-MM-DD'); // Get UTC15:00-24:00 Post 
+  await page.goto(`https://nitter.it/${cmd.user}/search?f=tweets&q=&since=${subtractDay}&until=${cmd.to}`);
   await page.exposeFunction("formatDate", formatDate);
   await page.exposeFunction("downloadImage", downloadImage);
 
@@ -60,16 +61,22 @@ function downloadImage(url, filepath) {
       let data = '';
       for (let [index, element] of elements.entries()) {
         const isRetweet = element.querySelector(".retweet-header");
+        const isReply = element.querySelector(".replying-to a");
         const link = element.querySelector(".tweet-link");
         const date = element.querySelector(".tweet-date a")?.getAttribute("title");
         const content = element.querySelector(".tweet-content")?.innerHTML;
         const image = element.querySelector(".attachment img")?.getAttribute("src");
         let dateFormat = await formatDate(date.toString());
-        data += `[${dateFormat}](${link.toString().replaceAll('https://nitter.it/','https://twitter.com/')})  \n`;
+        if (dateFormat[1] != fromDate) continue // Skip Post
+
+        data += `[${dateFormat[0]}](${link.toString().replaceAll('https://nitter.it/','https://twitter.com/')})  \n`;
         if (isRetweet) {
           const fullName = element.querySelector(".fullname-and-username .fullname").innerText;
           const username = element.querySelector(".fullname-and-username .username");
-          data += `Retweeted [${fullName} ${username.innerText}](https://twitter.com${username?.getAttribute("href")})  \n\n`;
+          data += `Retweet from [${fullName} ${username.innerText}](https://twitter.com${username?.getAttribute("href")})  \n\n`;
+        }
+        if (isReply) {
+          data += `Replying to [${isReply.innerText}](https://twitter.com${isReply?.getAttribute("href")})  \n\n`;
         }
         data += `${content}  \n`;
         if (image) {
@@ -92,6 +99,8 @@ function downloadImage(url, filepath) {
         buttonSelector.click(),
       ]);
     } else {
+      let data = fs.readFileSync(file, 'utf-8');
+      if (data === '') fs.unlinkSync(file);
       break;
     }
   }
