@@ -1,15 +1,12 @@
-name: Build and Deploy
+name: Crawler
 
 on:
-  # push:
-  #   branches:
-  #     - main
   schedule:
-    - cron: '30 4 * * *'
+    - cron: '0 15 * * *'
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  crawler:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -25,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: | 
           npm install
-          node index.js --from ${{ env.YESTERDAY_DATE }} --to ${{ env.CURRENT_DATE }} --user hirasawa
+          node crawler.js --from ${{ env.YESTERDAY_DATE }} --to ${{ env.CURRENT_DATE }} --user hirasawa
           git config --local user.name "Action Bot"
           git config --local user.email "actionBot@example.com"
           git add .
