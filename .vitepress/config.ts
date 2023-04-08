@@ -1,13 +1,20 @@
 import { getSidebar } from "./theme/getSidebar";
 import { withPwa } from "@vite-pwa/vitepress";
+import { SearchPlugin } from "vitepress-plugin-search";
 
 const ignoreSidebar = ["node_modules", "README.md", "index.md", "crawler"];
 const config = async () => {
   return withPwa({
-    title: "馬骨記錄",
-    description: "馬骨記錄用筆記本",
+    title: "Hrsw@Twlog",
+    description: "Hrsw@Twlog",
     base: "/TW-crawler",
     srcExclude: ['README.md'],
+    vite: { plugins: [SearchPlugin({
+      previewLength: 62,
+      buttonLabel: "Search",
+      placeholder: "Search docs",
+      tokenize: 'full'
+    })] },
     head: [
       [
         'link',
@@ -35,9 +42,9 @@ const config = async () => {
       injectRegister: 'auto',
       includeAssets: ["robots.txt", "apple-touch-icon.png"],
       manifest: {
-        name: "馬骨記錄",
-        short_name: "馬骨記錄",
-        description: "馬骨記錄用筆記本",
+        name: "Hrsw@Twlog",
+        short_name: "Hrsw@Twlog",
+        description: "Hrsw@Twlog",
         theme_color: "#0079d2",
         start_url: "./index.html",
         lang: "zh-Hant-HK",

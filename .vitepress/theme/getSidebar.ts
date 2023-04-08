@@ -5,7 +5,7 @@ const loopPath = (path, value, saveData) => {
     if (Object.keys(value[e]).length === 0) {
       saveData.items.push({
         text: e.replace(".md", ""),
-        link: `${path}/${e}`,
+        link: `/${path}/${e}`,
       })
       return saveData;
     } else {
