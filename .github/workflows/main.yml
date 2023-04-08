@@ -5,7 +5,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '0 16 * * *'
+    - cron: '47 3 * * *'
   workflow_dispatch:
 
 jobs:
@@ -27,6 +27,7 @@ jobs:
           npm install
           node index.js --from ${{ env.YESTERDAY_DATE }} --to ${{ env.CURRENT_DATE }} --user hirasawa
           git config --local user.name "Action Bot"
+          git config --local user.email "actionBot@example.com"
           git add .
           git commit -m "POST: ${{ env.YESTERDAY_DATE }}"
 
