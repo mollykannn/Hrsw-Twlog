@@ -7,7 +7,7 @@ const config = async () => {
   return withPwa({
     title: "Hrsw@Twlog",
     description: "Hrsw@Twlog",
-    base: "/TW-crawler",
+    base: "/Hrsw-Twlog",
     srcExclude: ['README.md'],
     vite: { plugins: [SearchPlugin({
       previewLength: 62,
@@ -18,7 +18,7 @@ const config = async () => {
     head: [
       [
         'link',
-        { rel: 'icon', href: '/TW-crawler/icons/favicon.ico' },
+        { rel: 'icon', href: '/Hrsw-Twlog/icons/favicon.ico' },
       ],
       [
         'meta',
@@ -31,12 +31,12 @@ const config = async () => {
       socialLinks: [
         {
           icon: "github",
-          link: "https://github.com/mollykannn/TW-crawler",
+          link: "https://github.com/mollykannn/Hrsw-Twlog",
         },
       ],
     },
     pwa: {
-      base: "/TW-crawler/",
+      base: "/Hrsw-Twlog/",
       outDir: ".vitepress/dist",
       registerType: "autoUpdate",
       injectRegister: 'auto',

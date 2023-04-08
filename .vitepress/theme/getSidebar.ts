@@ -1,6 +1,12 @@
 import { globby } from "@cjs-exporter/globby";
 
-const loopPath = (path, value, saveData) => {
+interface SideBar {
+  text: String
+  link?: String
+  items?: SideBar[]
+}
+
+const loopPath = (path, value, saveData):SideBar => {
   Object.keys(value).forEach((e) => {
     if (Object.keys(value[e]).length === 0) {
       saveData.items.push({
@@ -24,7 +30,7 @@ export async function getSidebar(ignorePath) {
   let paths = await globby(["**.md"], {
     ignore: ignorePath,
   });
-  let posts = [];
+  let posts:SideBar[] = [];
   const fileObject = {};
   let current;
   for (const path of paths) {
