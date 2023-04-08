@@ -2,7 +2,7 @@ name: Crawler
 
 on:
   schedule:
-    - cron: '0 15 * * *'
+    - cron: '30 15 * * *'
   workflow_dispatch:
 
 jobs:
@@ -21,6 +21,7 @@ jobs:
 
       - name: Install dependencies
         run: | 
+          cd crawler
           npm install
           node crawler.js --from ${{ env.YESTERDAY_DATE }} --to ${{ env.CURRENT_DATE }} --user hirasawa
           git config --local user.name "Action Bot"
