@@ -16,7 +16,10 @@
 
     2. 実行
     ```shell
-    node list.js --from 2023-04-01 --to 2023-04-02 --user (USERNAME)
+    node crawler.js --from (date[YYYY-MM-DD]) --to (date[YYYY-MM-DD]) --user (username)
+
+    Example:
+    node crawler.js --from 2023-04-01 --to 2023-04-02 --user hirasawa
     ```
     (実行結果は ```Twitter/___.md``` ファイルに記録される)
 
