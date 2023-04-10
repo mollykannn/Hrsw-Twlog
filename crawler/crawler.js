@@ -50,19 +50,20 @@ const downloadImage = (url, filepath) => {
 (async () => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
+  let postNumber = 0;
   const subtractDay = dayjs(cmd.from).subtract(1, 'day').format('YYYY-MM-DD'); // Get UTC15:00-24:00 
   await page.goto(`https://nitter.it/${cmd.user}/search?f=tweets&q=&since=${subtractDay}&until=${cmd.to}`);
   await page.exposeFunction("formatDate", formatDate);
   await page.exposeFunction("downloadImage", downloadImage);
 
   while (true) {
-    const result = await page.evaluate(async (fromDate) => {
+    const result = await page.evaluate(async (fromDate, postNumber) => {
       const getUserNameContent = (element) => {
         const fullName = element.querySelector(".fullname").innerText;
         const username = element.querySelector(".username");
         return `[${fullName} ${username.innerText}](https://twitter.com${username?.getAttribute("href")})`;
       }
-      const getPostContent = async (element, postNumber, action) => {
+      const getPostContent = async (element, action) => {
         let data = '';
         const contentClass = action === 'tweet' ? '.tweet-content' : '.quote-text';
         const quoteText = action === 'tweet' ? '' : '> ';
@@ -75,23 +76,24 @@ const downloadImage = (url, filepath) => {
         const isQuote = element.querySelector(".quote");
         let dateFormat = await formatDate(date.toString());
         if (dateFormat[1] != fromDate && action === 'tweet') return ''; // Skip Post
-        
-        data += action === 'tweet' ? '' : `${quoteText}${getUserNameContent(element)}  \n`;
-        data += `${quoteText}[${dateFormat[0]}](${link?.toString().replaceAll('https://nitter.it/', 'https://twitter.com/')})  \n`;
+        postNumber += 1;
+
+        data += action === 'tweet' ? '' : `${quoteText}${getUserNameContent(element)}\n`;
+        data += `${quoteText}[${dateFormat[0]}](${link?.toString().replaceAll('https://nitter.it/', 'https://twitter.com/')})\n`;
         if (isRetweet) {
-          data += `${quoteText}Retweet from ${getUserNameContent(element.querySelector(".tweet-header"))}  \n\n`;
+          data += `${quoteText}Retweet from ${getUserNameContent(element.querySelector(".tweet-header"))}\n\n`;
         }
         if (isReply) {
-          data += `${quoteText}Replying to [${isReply.innerText}](https://twitter.com${isReply?.getAttribute("href")})  \n\n`;
+          data += `${quoteText}Replying to [${isReply.innerText}](https://twitter.com${isReply?.getAttribute("href")})\n\n`;
         }
-        data += `${quoteText}${action === 'tweet' ? content : content.replaceAll('\n','\n>')}  \n`;
+        data += `${quoteText}${action === 'tweet' ? content : content.replaceAll('\n','\n>')}\n`;
         if (isQuote) {
           data += await getPostContent(isQuote, `${postNumber}-quote`, 'quote');
         }
         if (isImage) {
           for (let [index, element] of isImage.entries()) {
             await downloadImage(`https://nitter.it${element.querySelector('img')?.getAttribute("src")}`, `../Twitter/images/${fromDate}-${postNumber}-${index}.png`);
-            data += `${quoteText}![image](images/${fromDate}-${postNumber}-${index}.png)  \n`;
+            data += `${quoteText}![image](images/${fromDate}-${postNumber}-${index}.png)\n`;
           }
         }
         if (action === 'tweet') {
@@ -102,11 +104,11 @@ const downloadImage = (url, filepath) => {
 
       const elements = document.querySelectorAll(".timeline-item:not(.show-more)");
       let data = '';
-      for (let [index, element] of elements.entries()) {
-        data += await getPostContent(element, index, 'tweet');
+      for (let element of elements) {
+        data += await getPostContent(element, 'tweet');
       }
       return data;
-    }, cmd.from);
+    }, cmd.from, postNumber);
 
     fs.appendFile(file, result, (err) => {
       if (err) throw err;

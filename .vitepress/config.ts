@@ -1,20 +1,35 @@
 import { getSidebar } from "./theme/getSidebar";
 import { withPwa } from "@vite-pwa/vitepress";
 import { SearchPlugin } from "vitepress-plugin-search";
+const { getTokenizer } = require(`kuromojin`)
 
 const ignoreSidebar = ["node_modules", "README.md", "index.md", "crawler"];
 const config = async () => {
+  const tokenizer = await getTokenizer().then(tokenizer => tokenizer);
   return withPwa({
     title: "Hrsw@Twlog",
     description: "Hrsw@Twlog",
     base: "/Hrsw-Twlog",
     srcExclude: ['README.md'],
-    vite: { plugins: [SearchPlugin({
-      previewLength: 62,
-      buttonLabel: "Search",
-      placeholder: "Search docs",
-      tokenize: 'full'
-    })] },
+    vite: {
+      plugins: [SearchPlugin({
+        encode: function (str) {
+          if (!str) return [];
+          const POS_LIST = [`名詞`, `動詞`, `形容詞`] // 対象品詞
+          const IGNORE_REGEX = /^[!-/:-@[-`{-~、-〜”’・]+$/
+          const MIN_LENGTH = 2
+          let allTokens = tokenizer.tokenize(str).filter(token => POS_LIST.includes(token.pos))
+          .map(e => e.surface_form);
+          return [...new Set(allTokens)]
+          .filter(word => !IGNORE_REGEX.test(word))
+          .filter(word => word.length >= MIN_LENGTH)
+        },
+        tokenize: "forward",
+        previewLength: 62,
+        buttonLabel: "Search",
+        placeholder: "Search docs",
+      })],
+    },
     head: [
       [
         'link',
@@ -24,7 +39,7 @@ const config = async () => {
         'meta',
         { name: 'theme-color', content: '#000000' },
       ],
-  ],
+    ],
     themeConfig: {
       nav: [{ text: "Home", link: "/" }],
       sidebar: await getSidebar(ignoreSidebar),
@@ -39,7 +54,7 @@ const config = async () => {
       base: "/Hrsw-Twlog/",
       outDir: ".vitepress/dist",
       registerType: "autoUpdate",
-      injectRegister: 'auto',
+      selfDestroying: true,
       includeAssets: ["robots.txt", "apple-touch-icon.png"],
       manifest: {
         name: "Hrsw@Twlog",

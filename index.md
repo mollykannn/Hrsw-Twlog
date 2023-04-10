@@ -11,10 +11,14 @@
 這人另一邊的筆記在這邊：[馬骨記錄用筆記本](https://mollykannn.github.io/horse-bone-note/)
 
 ---
-
+#### 更新:
+- 10/4 
+  - 搜尋欄位使用了[kuromojin](https://github.com/azu/kuromojin)分詞，現在檔案少了一點。
+  - 刪除service worker
+  - 修正相片名稱
 #### 預定需要更新的項目:
 
 - Timeline顯示問題修正
 - 增加DatePicker方便搜尋資料
 - 爬蟲程式改回typescript方便debug
-- 搜尋欄位需作出改善
+- ~~搜尋欄位需作出改善~~

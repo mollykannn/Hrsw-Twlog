@@ -1,4 +1,7 @@
 {
+  "name": "hrsw-twlog",
+  "version": "0.0.1",
+  "private": true,
   "scripts": {
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",
@@ -11,6 +14,6 @@
     "vite-plugin-pwa": "^0.14.7",
     "vitepress": "^1.0.0-alpha.65",
     "vitepress-plugin-search": "^1.0.4-alpha.20",
-    "segment": "^0.1.3"
+    "kuromojin": "^3.0.0"
   }
 }
