@@ -79,7 +79,7 @@ const downloadImage = (url, filepath) => {
         postNumber += 1;
 
         data += action === 'tweet' ? '' : `${quoteText}${getUserNameContent(element)}\n`;
-        data += `${quoteText}[${dateFormat[0]}](${link?.toString().replaceAll('https://nitter.it/', 'https://twitter.com/')})\n`;
+        data += `${quoteText}[${dateFormat[0]}](${link?.toString().replaceAll('https://nitter.it/', 'https://twitter.com/')})\n\n`;
         if (isRetweet) {
           data += `${quoteText}Retweet from ${getUserNameContent(element.querySelector(".tweet-header"))}\n\n`;
         }
