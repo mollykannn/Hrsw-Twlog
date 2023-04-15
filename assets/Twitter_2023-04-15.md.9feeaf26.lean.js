@@ -1,1 +1,0 @@
-import{_ as r,c as t,o as a,U as p}from"./chunks/framework.2b4f8991.js";const c=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"Twitter/2023-04-15.md"}'),e={name:"Twitter/2023-04-15.md"},s=p("",72),h=[s];function o(i,n,_,l,w,f){return a(),t("div",null,h)}const u=r(e,[["render",o]]);export{c as __pageData,u as default};
