@@ -11,6 +11,9 @@ const config = async () => {
     base: "/Hrsw-Twlog",
     srcExclude: ['README.md'],
     vite: {
+      ssr: {
+        noExternal: ['naive-ui']
+      },
       plugins: [SearchPlugin({
         encode: function (str) {
           if (!str) return [];

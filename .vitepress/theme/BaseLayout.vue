@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter, useData } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
@@ -8,14 +8,14 @@ const { Layout } = DefaultTheme
 const router = useRouter();
 const data = useData();
 const timestamp = ref(null);
-const tweetDate = data?.theme?.value?.sidebar?.find(x => x.text === 'Twitter').items.map(e => {
+const tweetDate:Array<String> = data?.theme?.value?.sidebar?.find(x => x.text === 'Twitter')?.items?.map(e => {
   const matchDate = e.link.match(/Twitter\/(\d{4}-\d{2}-\d{2})\.md/);
   if (matchDate) return matchDate[1];
   return '';
 }) ?? [];
 
 const goToPath = () => timestamp.value ? router.go(`/Hrsw-Twlog/Twitter/${timestamp.value}.html`) : null;
-const disableDate = (date) => !tweetDate.some(x => x === dayjs(date).format('YYYY-MM-DD'));
+const disableDate = (date: number) => !tweetDate.some(x => x === dayjs(date).format('YYYY-MM-DD'));
 </script>
 
 <template>
