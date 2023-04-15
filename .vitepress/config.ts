@@ -3,7 +3,6 @@ import { withPwa } from "@vite-pwa/vitepress";
 import { SearchPlugin } from "vitepress-plugin-search";
 const { getTokenizer } = require(`kuromojin`)
 
-const ignoreSidebar = ["node_modules", "README.md", "index.md", "crawler"];
 const config = async () => {
   const tokenizer = await getTokenizer().then(tokenizer => tokenizer);
   return withPwa({
@@ -15,14 +14,12 @@ const config = async () => {
       plugins: [SearchPlugin({
         encode: function (str) {
           if (!str) return [];
-          const POS_LIST = [`名詞`, `動詞`, `形容詞`] // 対象品詞
-          const IGNORE_REGEX = /^[!-/:-@[-`{-~、-〜”’・]+$/
+          str = str.replaceAll('---', '');
+          const POS_LIST = [`名詞`, `動詞`, `形容詞`] // post_list
+          const POS_DETAIL = [`サ変接続`, `数`, `空白`] // pos_detail_1
           const MIN_LENGTH = 2
-          let allTokens = tokenizer.tokenize(str).filter(token => POS_LIST.includes(token.pos))
-          .map(e => e.surface_form);
-          return [...new Set(allTokens)]
-          .filter(word => !IGNORE_REGEX.test(word))
-          .filter(word => word.length >= MIN_LENGTH)
+          let allTokens = tokenizer.tokenize(str).filter(token => POS_LIST.includes(token.pos) && !POS_DETAIL.includes(token.pos_detail_1)).map(e => e.surface_form);
+          return [...new Set(allTokens)].filter(word => word.length >= MIN_LENGTH)
         },
         tokenize: "forward",
         previewLength: 62,
@@ -42,7 +39,7 @@ const config = async () => {
     ],
     themeConfig: {
       nav: [{ text: "Home", link: "/" }],
-      sidebar: await getSidebar(ignoreSidebar),
+      sidebar: await getSidebar(),
       socialLinks: [
         {
           icon: "github",

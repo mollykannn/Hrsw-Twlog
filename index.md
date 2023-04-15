@@ -12,6 +12,10 @@
 
 ---
 #### 更新:
+- 15/4 
+  - 搜尋欄位的Filter再改進一下
+  - 加了DatePicker方便搜尋
+  - Sidebar由最近->最遠排序
 - 10/4 
   - 搜尋欄位使用了[kuromojin](https://github.com/azu/kuromojin)分詞，現在檔案少了一點。
   - 刪除service worker
@@ -19,6 +23,6 @@
 #### 預定需要更新的項目:
 
 - Timeline顯示問題修正
-- 增加DatePicker方便搜尋資料
+- ~~增加DatePicker方便搜尋資料~~
 - 爬蟲程式改回typescript方便debug
 - ~~搜尋欄位需作出改善~~

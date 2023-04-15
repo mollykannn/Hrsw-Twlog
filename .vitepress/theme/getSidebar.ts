@@ -1,4 +1,5 @@
 import { globby } from "@cjs-exporter/globby";
+const ignoreSidebar = ["node_modules", "README.md", "index.md", "crawler"];
 
 interface SideBar {
   text: String
@@ -26,9 +27,9 @@ const loopPath = (path, value, saveData):SideBar => {
   return saveData
 };
 
-export async function getSidebar(ignorePath) {
+export async function getSidebar() {
   let paths = await globby(["**.md"], {
-    ignore: ignorePath,
+    ignore: ignoreSidebar,
   });
   let posts:SideBar[] = [];
   const fileObject = {};
@@ -51,5 +52,12 @@ export async function getSidebar(ignorePath) {
       posts.push(loopPath(key, fileObject[key], { text: key, items: [] }));
     }
   });
+  // Reverse twitter post
+  posts = posts.map(e => {
+    if (e.text === 'Twitter') {
+      e.items = e.items?.reverse();
+    }
+    return e
+  })
   return posts;
 }
