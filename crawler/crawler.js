@@ -12,8 +12,8 @@ const dirImage = "../Twitter/images";
 
 const cmd = stdio.getopt({
   'from': { key: 'from', description: 'from', args: 1 },
-  'to': { key: 'to', description: 'to', args: 1 },
-  'user': { key: 'to', description: 'user', args: 1 }
+  'to': { key: 'to', description: 'to', args: '*', required: false },
+  'user': { key: 'user', description: 'user', args: 1 }
 });
 const file = `../Twitter/${cmd.from}.md`;
 
@@ -23,7 +23,12 @@ if (!fs.existsSync(dir)) {
 if (!fs.existsSync(dirImage)) {
   fs.mkdirSync(dirImage);
 }
-fs.writeFile(file, "", (err) => {
+
+const header = cmd.to ? "" : `---
+title: ${cmd.from}
+---
+`;
+fs.writeFile(file, header, (err) => {
   if (err) throw err;
 });
 
@@ -48,16 +53,19 @@ const downloadImage = (url, filepath) => {
 }
 
 (async () => {
+  let tweetDate = '';
+  let postNumber = 0;
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  let postNumber = 0;
   const subtractDay = dayjs(cmd.from).subtract(1, 'day').format('YYYY-MM-DD'); // Get UTC15:00-24:00 
-  await page.goto(`https://nitter.it/${cmd.user}/search?f=tweets&q=&since=${subtractDay}&until=${cmd.to}`);
+  cmd.until = dayjs(cmd.to ?? cmd.from).add(1, 'day').format('YYYY-MM-DD'); 
+  await page.goto(`https://nitter.it/${cmd.user}/search?f=tweets&q=&since=${subtractDay}&until=${cmd.until}`);
+  console.log(`https://nitter.it/${cmd.user}/search?f=tweets&q=&since=${subtractDay}&until=${cmd.until}`);
   await page.exposeFunction("formatDate", formatDate);
   await page.exposeFunction("downloadImage", downloadImage);
 
   while (true) {
-    const result = await page.evaluate(async (fromDate, postNumber) => {
+    const result = await page.evaluate(async (cmd, postNumber, tweetDate) => {
       const getUserNameContent = (element) => {
         const fullName = element.querySelector(".fullname").innerText;
         const username = element.querySelector(".username");
@@ -69,31 +77,36 @@ const downloadImage = (url, filepath) => {
         const quoteText = action === 'tweet' ? '' : '> ';
         const link = element.querySelector(`.${action}-link`);
         const date = element.querySelector(".tweet-date a")?.getAttribute("title");
-        const content = element.querySelector(contentClass)?.innerHTML;
+        const content = element.querySelector(contentClass)?.innerHTML.replaceAll('href="/search?q=%23', 'href="https://twitter.com/search?q=%23');
         const isRetweet = element.querySelector(".retweet-header");
-        const isReply = element.querySelector(".replying-to a");
+        const isReply = element.querySelector(`${ action === 'tweet' ? 'div:not([class^="tweet-name-row"])' : '.tweet-name-row'}+.replying-to a`);
         const isImage = element.querySelectorAll(`${action === 'tweet' ? contentClass + ' + ' : ''}.attachments .attachment`);
         const isQuote = element.querySelector(".quote");
         let dateFormat = await formatDate(date.toString());
-        if (dateFormat[1] != fromDate && action === 'tweet') return ''; // Skip Post
+        if ((dateFormat[1] > (cmd.to ?? cmd.from) || dateFormat[1] < cmd.from) && action === 'tweet') return ''; // Skip Post
+        if (tweetDate != dateFormat[1] && action === 'tweet') {
+          postNumber = 0;
+          tweetDate = dateFormat[1];
+          data += `# ${dateFormat[1]}\n\n`;
+        }
         postNumber += 1;
 
-        data += action === 'tweet' ? '' : `${quoteText}${getUserNameContent(element)}\n`;
-        data += `${quoteText}[${dateFormat[0]}](${link?.toString().replaceAll('https://nitter.it/', 'https://twitter.com/')})\n\n`;
+        data += `${quoteText}[${dateFormat[0]}](${link?.toString().replaceAll('https://nitter.it/', 'https://twitter.com/')})\n${quoteText}\n`;
+        data += action === 'tweet' ? '' : `${quoteText}${getUserNameContent(element)}\n${quoteText}\n`;
         if (isRetweet) {
-          data += `${quoteText}Retweet from ${getUserNameContent(element.querySelector(".tweet-header"))}\n\n`;
+          data += `${quoteText}Retweet from ${getUserNameContent(element.querySelector(".tweet-header"))}\n${quoteText}\n`;
         }
         if (isReply) {
-          data += `${quoteText}Replying to [${isReply.innerText}](https://twitter.com${isReply?.getAttribute("href")})\n\n`;
+          data += `${quoteText}Replying to [${isReply.innerText}](https://twitter.com${isReply?.getAttribute("href")})\n${quoteText}\n`;
         }
         data += `${quoteText}${action === 'tweet' ? content : content.replaceAll('\n','\n>')}\n`;
         if (isQuote) {
-          data += await getPostContent(isQuote, `${postNumber}-quote`, 'quote');
+          data += await getPostContent(isQuote, 'quote');
         }
         if (isImage) {
           for (let [index, element] of isImage.entries()) {
-            await downloadImage(`https://nitter.it${element.querySelector('img')?.getAttribute("src")}`, `../Twitter/images/${fromDate}-${postNumber}-${index}.png`);
-            data += `${quoteText}![image](images/${fromDate}-${postNumber}-${index}.png)\n`;
+            await downloadImage(`https://nitter.it${element.querySelector('img')?.getAttribute("src")}`, `../Twitter/images/${cmd.from}-${postNumber}-${index}.png`);
+            data += `${quoteText}![image](images/${cmd.from}-${postNumber}-${index}.png)\n`;
           }
         }
         if (action === 'tweet') {
@@ -107,10 +120,12 @@ const downloadImage = (url, filepath) => {
       for (let element of elements) {
         data += await getPostContent(element, 'tweet');
       }
-      return data;
-    }, cmd.from, postNumber);
+      return {result: data, date: tweetDate, postNumber: postNumber};
+    }, cmd, postNumber, tweetDate);
 
-    fs.appendFile(file, result, (err) => {
+    tweetDate = result.date;
+    postNumber = result.postNumber;
+    fs.appendFile(file, result.result, (err) => {
       if (err) throw err;
     });
 
@@ -122,7 +137,7 @@ const downloadImage = (url, filepath) => {
       ]);
     } else {
       let data = fs.readFileSync(file, 'utf-8');
-      if (data === '') fs.unlinkSync(file);
+      if (data === header) fs.unlinkSync(file);
       break;
     }
   }

@@ -1,17 +1,17 @@
 大家好👋
 
-這是一個每天都會爬[Twitter@hirasawa](https://twitter.com/hirasawa)的程式。
+這時一個爬蟲程式，會在每天00:00(日本時間)左右截取前一天[hirasawa](https://twitter.com/hirasawa)的tweet。
 
-在Nitter (另一個Twitter簡易UI版) 裡進行爬蟲。
+直接在Twitter裡截取有點麻煩，這裡的截取源是[Nitter](https://nitter.it)。
 
-會在每天日本時間00:00左右更新前一天的tweet。(暫時看Github Action會有少許延遲)
+因為最近一直也很忙碌所以fix bug進度可能會比較慢。
 
-測試進行中...因為這人一直也很忙碌所以fix bug進度可能會比較慢...
-
-這人另一邊的筆記在這邊：[馬骨記錄用筆記本](https://mollykannn.github.io/horse-bone-note/)
+程式在[這裡](https://github.com/mollykannn/Hrsw-Twlog)，也可以用來爬其他用戶/指定時間。
 
 ---
 #### 更新:
+- 19/4
+  - Crawler改進了一點點
 - 15/4 
   - 搜尋欄位的Filter再改進一下
   - 加了DatePicker方便搜尋

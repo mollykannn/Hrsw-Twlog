@@ -16,14 +16,13 @@ jobs:
         env:
           TZ: 'Asia/Tokyo'
         run: |
-          echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
           echo "YESTERDAY_DATE=$(date '+%Y-%m-%d' --date '1 day ago')" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: | 
           cd crawler
           npm install
-          node crawler.js --from ${{ env.YESTERDAY_DATE }} --to ${{ env.CURRENT_DATE }} --user hirasawa
+          node crawler.js --from ${{ env.YESTERDAY_DATE }} --user hirasawa
           cd ..
           git config --local user.name "Action Bot"
           git config --local user.email "actionBot@example.com"
