@@ -15,7 +15,7 @@
     "kuromojin": "^3.0.0",
     "naive-ui": "^2.34.3",
     "vite-plugin-pwa": "^0.14.7",
-    "vitepress": "^1.0.0-alpha.65",
+    "vitepress": "^1.0.0-alpha.73",
     "vitepress-plugin-search": "^1.0.4-alpha.20"
   }
 }

@@ -10,6 +10,9 @@
 
 ---
 #### 更新:
+- 23/4
+  - 轉了nitter的URL
+  - 還未想到好一點的Timeline顯示方法，先hold一下...
 - 19/4
   - Crawler改進了一點點
 - 15/4 
@@ -20,9 +23,6 @@
   - 搜尋欄位使用了[kuromojin](https://github.com/azu/kuromojin)分詞，現在檔案少了一點。
   - 刪除service worker
   - 修正相片名稱
-#### 預定需要更新的項目:
 
+#### 預定需要更新的項目:
 - Timeline顯示問題修正
-- ~~增加DatePicker方便搜尋資料~~
-- 爬蟲程式改回typescript方便debug
-- ~~搜尋欄位需作出改善~~

@@ -7,23 +7,18 @@ const utc = require('dayjs/plugin/utc');
 const timezone = require('dayjs/plugin/timezone');
 dayjs.extend(utc);
 dayjs.extend(timezone);
-const dir = "../Twitter";
-const dirImage = "../Twitter/images";
 
 const cmd = stdio.getopt({
   'from': { key: 'from', description: 'from', args: 1 },
   'to': { key: 'to', description: 'to', args: '*', required: false },
   'user': { key: 'user', description: 'user', args: 1 }
 });
+// File path
 const file = `../Twitter/${cmd.from}.md`;
-
-if (!fs.existsSync(dir)) {
-  fs.mkdirSync(dir);
-}
-if (!fs.existsSync(dirImage)) {
-  fs.mkdirSync(dirImage);
-}
-
+// Build folder
+if (!fs.existsSync("../Twitter")) fs.mkdirSync("../Twitter");
+if (!fs.existsSync("../Twitter/images")) fs.mkdirSync("../Twitter/images");
+// Write header
 const header = cmd.to ? "" : `---
 title: ${cmd.from}
 ---
@@ -33,8 +28,8 @@ fs.writeFile(file, header, (err) => {
 });
 
 const formatDate = (date) => {
-  let dateTimezone = dayjs(date.replace(' · ', ' ')).tz('Asia/Tokyo');
-  return [dateTimezone.format('D MMM, YYYY hh:mm A'), dateTimezone.format('YYYY-MM-DD')];
+  const dateTimezone = dayjs(date.replace(' · ', ' ')).tz('Asia/Tokyo');
+  return { 'displayDate': dateTimezone.format('D MMM, YYYY hh:mm A'), 'shortDate': dateTimezone.format('YYYY-MM-DD') };
 }
 
 const downloadImage = (url, filepath) => {
@@ -57,10 +52,10 @@ const downloadImage = (url, filepath) => {
   let postNumber = 0;
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  const subtractDay = dayjs(cmd.from).subtract(1, 'day').format('YYYY-MM-DD'); // Get UTC15:00-24:00 
-  cmd.until = dayjs(cmd.to ?? cmd.from).add(1, 'day').format('YYYY-MM-DD'); 
-  await page.goto(`https://nitter.net/${cmd.user}/search?f=tweets&q=&since=${subtractDay}&until=${cmd.until}`);
-  console.log(`https://nitter.net/${cmd.user}/search?f=tweets&q=&since=${subtractDay}&until=${cmd.until}`);
+  const since = dayjs(cmd.from).subtract(1, 'day').format('YYYY-MM-DD'); // Twitter return UTC time, subtract 1 day to get tweet from 15:00 to 24:00 (UTC)
+  const until = dayjs(cmd.to ?? cmd.from).add(1, 'day').format('YYYY-MM-DD');
+  await page.goto(`https://nitter.net/${cmd.user}/search?f=tweets&q=&since=${since}&until=${until}`);
+  console.log(`https://nitter.net/${cmd.user}/search?f=tweets&q=&since=${since}&until=${until}`);
   await page.exposeFunction("formatDate", formatDate);
   await page.exposeFunction("downloadImage", downloadImage);
 
@@ -79,19 +74,19 @@ const downloadImage = (url, filepath) => {
         const date = element.querySelector(".tweet-date a")?.getAttribute("title");
         const content = element.querySelector(contentClass)?.innerHTML.replaceAll('href="/search?q=%23', 'href="https://twitter.com/search?q=%23');
         const isRetweet = element.querySelector(".retweet-header");
-        const isReply = element.querySelector(`${ action === 'tweet' ? 'div:not([class^="tweet-name-row"])' : '.tweet-name-row'}+.replying-to a`);
-        const isImage = element.querySelectorAll(`${action === 'tweet' ? contentClass + ' + ' : ''}.attachments .attachment`);
+        const isReply = element.querySelector(`${action === 'tweet' ? 'div:not([class^="tweet-name-row"])' : '.tweet-name-row'}+.replying-to a`);
+        const isImage = element.querySelectorAll(`${action === 'tweet' ? `${contentClass} + ` : ''}.attachments .attachment`);
         const isQuote = element.querySelector(".quote");
-        let dateFormat = await formatDate(date.toString());
-        if ((dateFormat[1] > (cmd.to ?? cmd.from) || dateFormat[1] < cmd.from) && action === 'tweet') return ''; // Skip Post
-        if (tweetDate != dateFormat[1] && action === 'tweet') {
+        const dateResult = await formatDate(date);
+        if ((dateResult.shortDate > (cmd.to ?? cmd.from) || dateResult.shortDate < cmd.from) && action === 'tweet') return ''; // Skip post
+        if (tweetDate != dateResult.shortDate && action === 'tweet') {
           postNumber = 0;
-          tweetDate = dateFormat[1];
-          data += `# ${dateFormat[1]}\n\n`;
+          tweetDate = dateResult.shortDate;
+          data += `# ${dateResult.shortDate}\n\n`;
         }
         postNumber += 1;
 
-        data += `${quoteText}[${dateFormat[0]}](${link?.toString().replaceAll('https://nitter.net/', 'https://twitter.com/')})\n${quoteText}\n`;
+        data += `${quoteText}[${dateResult.displayDate}](${link?.toString().replaceAll('https://nitter.net/', 'https://twitter.com/')})\n${quoteText}\n`;
         data += action === 'tweet' ? '' : `${quoteText}${getUserNameContent(element)}\n${quoteText}\n`;
         if (isRetweet) {
           data += `${quoteText}Retweet from ${getUserNameContent(element.querySelector(".tweet-header"))}\n${quoteText}\n`;
@@ -99,7 +94,7 @@ const downloadImage = (url, filepath) => {
         if (isReply) {
           data += `${quoteText}Replying to [${isReply.innerText}](https://twitter.com${isReply?.getAttribute("href")})\n${quoteText}\n`;
         }
-        data += `${quoteText}${action === 'tweet' ? content : content.replaceAll('\n','\n>')}\n`;
+        data += `${quoteText}${action === 'tweet' ? content : content.replaceAll('\n', '\n>')}\n`;
         if (isQuote) {
           data += await getPostContent(isQuote, 'quote');
         }
@@ -120,15 +115,17 @@ const downloadImage = (url, filepath) => {
       for (let element of elements) {
         data += await getPostContent(element, 'tweet');
       }
-      return {result: data, date: tweetDate, postNumber: postNumber};
+      return { data: data, date: tweetDate, postNumber: postNumber };
     }, cmd, postNumber, tweetDate);
 
+    // Write data
     tweetDate = result.date;
     postNumber = result.postNumber;
-    fs.appendFile(file, result.result, (err) => {
+    fs.appendFile(file, result.data, (err) => {
       if (err) throw err;
     });
 
+    // Next page
     const [buttonSelector] = await page.$x("//a[contains(., 'Load more')]")
     if (buttonSelector) {
       await Promise.all([
@@ -136,7 +133,7 @@ const downloadImage = (url, filepath) => {
         buttonSelector.click(),
       ]);
     } else {
-      let data = fs.readFileSync(file, 'utf-8');
+      const data = fs.readFileSync(file, 'utf-8');
       if (data === header) fs.unlinkSync(file);
       break;
     }
