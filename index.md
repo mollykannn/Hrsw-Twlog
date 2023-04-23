@@ -2,7 +2,7 @@
 
 這時一個爬蟲程式，會在每天00:00(日本時間)左右截取前一天[hirasawa](https://twitter.com/hirasawa)的tweet。
 
-直接在Twitter裡截取有點麻煩，這裡的截取源是[Nitter](https://nitter.it)。
+直接在Twitter裡截取有點麻煩，這裡的截取源是[Nitter](https://nitter.net)。
 
 因為最近一直也很忙碌所以fix bug進度可能會比較慢。
 

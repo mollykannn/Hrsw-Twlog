@@ -59,8 +59,8 @@ const downloadImage = (url, filepath) => {
   const page = await browser.newPage();
   const subtractDay = dayjs(cmd.from).subtract(1, 'day').format('YYYY-MM-DD'); // Get UTC15:00-24:00 
   cmd.until = dayjs(cmd.to ?? cmd.from).add(1, 'day').format('YYYY-MM-DD'); 
-  await page.goto(`https://nitter.it/${cmd.user}/search?f=tweets&q=&since=${subtractDay}&until=${cmd.until}`);
-  console.log(`https://nitter.it/${cmd.user}/search?f=tweets&q=&since=${subtractDay}&until=${cmd.until}`);
+  await page.goto(`https://nitter.net/${cmd.user}/search?f=tweets&q=&since=${subtractDay}&until=${cmd.until}`);
+  console.log(`https://nitter.net/${cmd.user}/search?f=tweets&q=&since=${subtractDay}&until=${cmd.until}`);
   await page.exposeFunction("formatDate", formatDate);
   await page.exposeFunction("downloadImage", downloadImage);
 
@@ -91,7 +91,7 @@ const downloadImage = (url, filepath) => {
         }
         postNumber += 1;
 
-        data += `${quoteText}[${dateFormat[0]}](${link?.toString().replaceAll('https://nitter.it/', 'https://twitter.com/')})\n${quoteText}\n`;
+        data += `${quoteText}[${dateFormat[0]}](${link?.toString().replaceAll('https://nitter.net/', 'https://twitter.com/')})\n${quoteText}\n`;
         data += action === 'tweet' ? '' : `${quoteText}${getUserNameContent(element)}\n${quoteText}\n`;
         if (isRetweet) {
           data += `${quoteText}Retweet from ${getUserNameContent(element.querySelector(".tweet-header"))}\n${quoteText}\n`;
@@ -105,7 +105,7 @@ const downloadImage = (url, filepath) => {
         }
         if (isImage) {
           for (let [index, element] of isImage.entries()) {
-            await downloadImage(`https://nitter.it${element.querySelector('img')?.getAttribute("src")}`, `../Twitter/images/${cmd.from}-${postNumber}-${index}.png`);
+            await downloadImage(`https://nitter.net${element.querySelector('img')?.getAttribute("src")}`, `../Twitter/images/${cmd.from}-${postNumber}-${index}.png`);
             data += `${quoteText}![image](images/${cmd.from}-${postNumber}-${index}.png)\n`;
           }
         }
