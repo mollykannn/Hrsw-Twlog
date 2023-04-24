@@ -54,8 +54,8 @@ const downloadImage = (url, filepath) => {
   const page = await browser.newPage();
   const since = dayjs(cmd.from).subtract(1, 'day').format('YYYY-MM-DD'); // Twitter return UTC time, subtract 1 day to get tweet from 15:00 to 24:00 (UTC)
   const until = dayjs(cmd.to ?? cmd.from).add(1, 'day').format('YYYY-MM-DD');
-  await page.goto(`https://nitter.net/${cmd.user}/search?f=tweets&q=&since=${since}&until=${until}`);
-  console.log(`https://nitter.net/${cmd.user}/search?f=tweets&q=&since=${since}&until=${until}`);
+  console.log(`https://nitter.nl/${cmd.user}/search?f=tweets&q=&since=${since}&until=${until}`);
+  await page.goto(`https://nitter.nl/${cmd.user}/search?f=tweets&q=&since=${since}&until=${until}`);
   await page.exposeFunction("formatDate", formatDate);
   await page.exposeFunction("downloadImage", downloadImage);
 
@@ -72,7 +72,7 @@ const downloadImage = (url, filepath) => {
         const quoteText = action === 'tweet' ? '' : '> ';
         const link = element.querySelector(`.${action}-link`);
         const date = element.querySelector(".tweet-date a")?.getAttribute("title");
-        const content = element.querySelector(contentClass)?.innerHTML.replaceAll('href="/search?q=%23', 'href="https://twitter.com/search?q=%23');
+        const content = element.querySelector(contentClass)?.innerHTML.replaceAll('href="/search?q=%23', 'href="https://twitter.com/search?q=%23').replaceAll('invidious.nl', 'youtube.com');
         const isRetweet = element.querySelector(".retweet-header");
         const isReply = element.querySelector(`${action === 'tweet' ? 'div:not([class^="tweet-name-row"])' : '.tweet-name-row'}+.replying-to a`);
         const isImage = element.querySelectorAll(`${action === 'tweet' ? `${contentClass} + ` : ''}.attachments .attachment`);
@@ -86,7 +86,7 @@ const downloadImage = (url, filepath) => {
         }
         postNumber += 1;
 
-        data += `${quoteText}[${dateResult.displayDate}](${link?.toString().replaceAll('https://nitter.net/', 'https://twitter.com/')})\n${quoteText}\n`;
+        data += `${quoteText}[${dateResult.displayDate}](${link?.toString().replaceAll('https://nitter.nl/', 'https://twitter.com/')})\n${quoteText}\n`;
         data += action === 'tweet' ? '' : `${quoteText}${getUserNameContent(element)}\n${quoteText}\n`;
         if (isRetweet) {
           data += `${quoteText}Retweet from ${getUserNameContent(element.querySelector(".tweet-header"))}\n${quoteText}\n`;
@@ -100,7 +100,7 @@ const downloadImage = (url, filepath) => {
         }
         if (isImage) {
           for (let [index, element] of isImage.entries()) {
-            await downloadImage(`https://nitter.net${element.querySelector('img')?.getAttribute("src")}`, `../Twitter/images/${cmd.from}-${postNumber}-${index}.png`);
+            await downloadImage(`https://nitter.nl${element.querySelector('img')?.getAttribute("src")}`, `../Twitter/images/${cmd.from}-${postNumber}-${index}.png`);
             data += `${quoteText}![image](images/${cmd.from}-${postNumber}-${index}.png)\n`;
           }
         }
