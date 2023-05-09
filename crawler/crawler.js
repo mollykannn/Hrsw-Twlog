@@ -54,7 +54,7 @@ const downloadImage = (url, filepath) => {
   const page = await browser.newPage();
   const since = dayjs(cmd.from).subtract(1, 'day').format('YYYY-MM-DD'); // Twitter return UTC time, subtract 1 day to get tweet from 15:00 to 24:00 (UTC)
   const until = dayjs(cmd.to ?? cmd.from).add(1, 'day').format('YYYY-MM-DD');
-  console.log(`https://nitter.nl/${cmd.user}/search?f=tweets&q=&since=${since}&until=${until}`);
+  console.log(`Crawler URL: https://nitter.nl/${cmd.user}/search?f=tweets&q=&since=${since}&until=${until}`);
   await page.goto(`https://nitter.nl/${cmd.user}/search?f=tweets&q=&since=${since}&until=${until}`);
   await page.exposeFunction("formatDate", formatDate);
   await page.exposeFunction("downloadImage", downloadImage);
@@ -72,7 +72,7 @@ const downloadImage = (url, filepath) => {
         const quoteText = action === 'tweet' ? '' : '> ';
         const link = element.querySelector(`.${action}-link`);
         const date = element.querySelector(".tweet-date a")?.getAttribute("title");
-        const content = element.querySelector(contentClass)?.innerHTML.replaceAll('href="/search?q=%23', 'href="https://twitter.com/search?q=%23').replaceAll('invidious.nl', 'youtube.com');
+        const content = element.querySelector(contentClass)?.innerHTML.replaceAll('href="/search?q=%23', 'href="https://twitter.com/search?q=%23').replaceAll('invidious.nl', 'youtube.com').replaceAll('\n', '  \n');
         const isRetweet = element.querySelector(".retweet-header");
         const isReply = element.querySelector(`${action === 'tweet' ? 'div:not([class^="tweet-name-row"])' : '.tweet-name-row'}+.replying-to a`);
         const isImage = element.querySelectorAll(`${action === 'tweet' ? `${contentClass} + ` : ''}.attachments .attachment`);
