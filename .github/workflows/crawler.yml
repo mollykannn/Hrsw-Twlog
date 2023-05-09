@@ -22,7 +22,7 @@ jobs:
         run: | 
           cd crawler
           npm install
-          node crawler_git.js --from ${{ env.YESTERDAY_DATE }} --user hirasawa
+          node crawler.js --from ${{ env.YESTERDAY_DATE }} --user hirasawa --action daily
           cd ..
           git config --local user.name "Action Bot"
           git config --local user.email "actionBot@example.com"

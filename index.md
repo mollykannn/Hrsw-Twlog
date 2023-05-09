@@ -4,7 +4,7 @@
 
 Twitterに取るは面倒だから、このプログラムは[Nitter](https://nitter.net)に取る。
 
-仕事が忙しいので、バグ修正は少し遅い🙇🏻‍♀️。
+最近仕事が忙しいので、バグ修正は少し遅い🙇🏻‍♀️。
 
 プログラムは[こちら](https://github.com/mollykannn/Hrsw-Twlog)。
 
@@ -18,7 +18,7 @@ Twitterに取るは面倒だから、このプログラムは[Nitter](https://ni
 
 直接在Twitter裡截取有點麻煩，這裡的截取源是[Nitter](https://nitter.net)。
 
-因為最近一直也很忙碌所以fix bug進度可能會比較慢。
+因為最近一直也很忙碌所以fix bug進度可能會比較慢🙇🏻‍♀️。
 
 程式在[這裡](https://github.com/mollykannn/Hrsw-Twlog)，也可以用來爬其他用戶/指定時間。
 

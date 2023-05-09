@@ -11,13 +11,15 @@ dayjs.extend(timezone);
 const cmd = stdio.getopt({
   'from': { key: 'from', description: 'from', args: 1 },
   'to': { key: 'to', description: 'to', args: '*', required: false },
-  'user': { key: 'user', description: 'user', args: 1 }
+  'user': { key: 'user', description: 'user', args: 1 },
+  'action': { key: 'action', description: 'action', required: false, args: 1, default: 'default' },
 });
 // File path
 const file = `../Twitter/${cmd.from}.md`;
 // Build folder
 if (!fs.existsSync("../Twitter")) fs.mkdirSync("../Twitter");
 if (!fs.existsSync("../Twitter/images")) fs.mkdirSync("../Twitter/images");
+const action = cmd.action === 'daily' ? "daily" : 'default'
 // Write header
 const header = cmd.to ? "" : `---
 title: ${cmd.from}
@@ -50,12 +52,15 @@ const downloadImage = (url, filepath) => {
 (async () => {
   let tweetDate = '';
   let postNumber = 0;
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    headless: 'new'
+  });
   const page = await browser.newPage();
   const since = dayjs(cmd.from).subtract(1, 'day').format('YYYY-MM-DD'); // Twitter return UTC time, subtract 1 day to get tweet from 15:00 to 24:00 (UTC)
   const until = dayjs(cmd.to ?? cmd.from).add(1, 'day').format('YYYY-MM-DD');
-  console.log(`Crawler URL: https://nitter.nl/${cmd.user}/search?f=tweets&q=&since=${since}&until=${until}`);
-  await page.goto(`https://nitter.nl/${cmd.user}/search?f=tweets&q=&since=${since}&until=${until}`);
+  const crawlerURL = action === 'daily' ? `https://nitter.nl/${cmd.user}` : `https://nitter.nl/${cmd.user}/search?f=tweets&q=&since=${since}&until=${until}`
+  await page.goto(crawlerURL);
+  console.log(`Crawler URL: ${crawlerURL}`);
   await page.exposeFunction("formatDate", formatDate);
   await page.exposeFunction("downloadImage", downloadImage);
 
@@ -78,7 +83,10 @@ const downloadImage = (url, filepath) => {
         const isImage = element.querySelectorAll(`${action === 'tweet' ? `${contentClass} + ` : ''}.attachments .attachment`);
         const isQuote = element.querySelector(".quote");
         const dateResult = await formatDate(date);
-        if ((dateResult.shortDate > (cmd.to ?? cmd.from) || dateResult.shortDate < cmd.from) && action === 'tweet') return ''; // Skip post
+        if ((dateResult.shortDate > (cmd.to ?? cmd.from) || dateResult.shortDate < cmd.from) && action === 'tweet') {
+          tweetDate = dateResult.shortDate;
+          return ''
+        }; // Skip post
         if (tweetDate != dateResult.shortDate && action === 'tweet') {
           postNumber = 0;
           tweetDate = dateResult.shortDate;
@@ -127,7 +135,7 @@ const downloadImage = (url, filepath) => {
 
     // Next page
     const [buttonSelector] = await page.$x("//a[contains(., 'Load more')]")
-    if (buttonSelector) {
+    if (buttonSelector && tweetDate >= cmd.from) {
       await Promise.all([
         page.waitForNavigation(),
         buttonSelector.click(),
