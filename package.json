@@ -9,13 +9,13 @@
   },
   "devDependencies": {
     "@cjs-exporter/globby": "^13.1.3",
-    "@vite-pwa/vitepress": "^0.0.5",
-    "dayjs": "^1.11.7",
+    "@vite-pwa/vitepress": "^0.2.0",
+    "dayjs": "^1.11.9",
     "flexsearch": "^0.7.31",
     "kuromojin": "^3.0.0",
-    "naive-ui": "^2.34.3",
-    "vite-plugin-pwa": "^0.14.7",
-    "vitepress": "1.0.0-alpha.73",
+    "naive-ui": "^2.34.4",
+    "vite-plugin-pwa": "^0.16.4",
+    "vitepress": "1.0.0-rc.10",
     "vitepress-plugin-search": "^1.0.4-alpha.20"
   }
 }
